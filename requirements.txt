@@ -1,0 +1,6 @@
+guidance=0.1.10
+openai
+tiktoken
+numpy
+pandas
+tqdm
