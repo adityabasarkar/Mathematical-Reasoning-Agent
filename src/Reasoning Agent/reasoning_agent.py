@@ -1,6 +1,6 @@
 """
 Contains the main mathematical reasoning mechanism for the agent.
-Uses guidance as the main method of 
+Uses guidance as the main method of manipulating LLMs
 """
 
 from time import sleep
@@ -16,7 +16,9 @@ from tiktoken import encoding_name_for_model
 
 
 
-class MathReasoning:
+
+
+class CRPoweredSelfDiscover:
 
     def __init__(self, lm: guidance.models):
         self.language_model = lm
@@ -60,7 +62,9 @@ class MathReasoning:
             "36. What is the best way to modify this current best solution, given what you know about these kinds of problem specification?",
             "37. Ignoring the current best solution, create an entirely new solution to the problem.",
             "38. Let’s think step by step.",
-            "39. Let’s make a step by step plan and implement it with good notation and explanation."
+            "39. Let’s make a step by step plan and implement it with good notation and explanation.",
+            "40. How can I represent this question in terms of variables and equations?",
+            "41. How can the equations in this problem be rearanged to make the problem easier to solve?"
         ]
 
     def solve(self, question_type: str, question: str, temperature: float):
@@ -84,13 +88,13 @@ class MathReasoning:
         
         with user():
             self.language_model += """
-            Your task is to select the reasoning modules that are crucial to utilize in order to solve the following question: {question}.
-            For additional context, the question type for this question is {question_type}
+            Your task is to select the reasoning modules that are crucial to utilize in order to solve the following question: {}.
+            For additional context, the question type for this question is {}
             First think step by step as to what reasoning modules should be selected and why. The explanation for your selection should be short. 
             Then, after you have finished your reasoning, select relevant reasoning modules for the task.
 
             Choose from the following modules:\n
-            """
+            """.format(question, question_type)
 
             for i in range(len(self.reasoning_modules)):
                 self.language_model += self.reasoning_modules[i] + "\n"
@@ -102,8 +106,8 @@ class MathReasoning:
 
         with user():
             self.language_model += """Now that you have chosen your reasoning modules, rephrase and specify 
-            each reasoning module so that it better helps in solving the given question: {question}\n
-            """
+            each reasoning module so that it better helps in solving the given question: {}\n
+            """.format(question)
         
         with assistant():
             self.language_model += gen("adaptation", temperature=temperature, max_tokens=2000)
@@ -112,14 +116,14 @@ class MathReasoning:
 
         with user():
             self.language_model += """
-            Given the question: {question}, you have adapted the reasoning modules to your specific task.
+            Given the question: {}, you have adapted the reasoning modules to your specific task.
             Now, operationalize the reasoning modules into a step-by-step reasoning plan. Make sure
             to think step by step as to what the reasoning plan should be. The following is an example
             of a reasoning plan you might generate:
             1. Find the area of the square
             2. Find the area of the circle
             3. Sum the areas
-            """
+            """.format(question)
         
         with assistant():
             self.language_model += gen("implement_reason", temperature=temperature, max_tokens=2000)
@@ -260,17 +264,17 @@ class MathReasoning:
             self.language_model += "[4] [1,2,3] The total area is A = 100*PI + 9<END>"
 
         with user():
-            self.language_model += "Question: {question} | Question Type: {question_type}"
+            self.language_model += "Question: {} | Question Type: {}".format(question, question_type)
 
         complete_solution_capsule["steps_list"] = {}
 
-        for i in enumerate(steps_list):
+        for i, step in enumerate(steps_list):
 
             with user():
-                self.language_model += "<STEP>{steps_list[i]}</STEP>"
+                self.language_model += "<STEP>{}</STEP>".format(step)
 
             complete_solution_capsule["steps_list"]["Step {}".format(i)] = {}
-            complete_solution_capsule["steps_list"]["Step {}".format(i)]["instruction"] = steps_list[i]
+            complete_solution_capsule["steps_list"]["Step {}".format(i)]["instruction"] = step
 
             with user():
                 self.language_model += "Generate initial propositions"
@@ -291,9 +295,9 @@ class MathReasoning:
         with user():
             self.language_model += """
             Now that you have solved all the steps of your reasoning plan. Formulate your final answer the question.
-            As a reminder, your current question is: {question}
+            As a reminder, your current question is: {}
             Make sure to write your answer with the correct units.
-            """
+            """.format(question)
         
         with assistant():
             self.language_model += gen("answer", temperature=temperature, max_tokens=1000)
