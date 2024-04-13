@@ -99,6 +99,7 @@ class CRPoweredSelfDiscover:
             for i in range(len(self.reasoning_modules)):
                 self.language_model += self.reasoning_modules[i] + "\n"
         
+        print("gen1")
         with assistant():
             self.language_model += gen("module_selection_reasoning", temperature=temperature, max_tokens=2000)
         
@@ -109,6 +110,7 @@ class CRPoweredSelfDiscover:
             each reasoning module so that it better helps in solving the given question: {}\n
             """.format(question)
         
+        print("gen2")
         with assistant():
             self.language_model += gen("adaptation", temperature=temperature, max_tokens=2000)
         
@@ -125,6 +127,7 @@ class CRPoweredSelfDiscover:
             3. Sum the areas
             """.format(question)
         
+        print("gen3")
         with assistant():
             self.language_model += gen("implement_reason", temperature=temperature, max_tokens=2000)
         
@@ -145,6 +148,7 @@ class CRPoweredSelfDiscover:
             [1. Identify the radius of the circle || 2. Identify the length of the side of the square || 3. Find the area of the square || 4. Find the area of the circle || 5. Sum the areas]
             """
 
+        print("gen4")
         with assistant():
             self.language_model += gen("formal_steps", temperature=temperature, max_tokens=2000)
         
@@ -267,7 +271,8 @@ class CRPoweredSelfDiscover:
             self.language_model += "Question: {} | Question Type: {}".format(question, question_type)
 
         complete_solution_capsule["steps_list"] = {}
-
+        
+        print("gen5")
         for i, step in enumerate(steps_list):
 
             with user():
@@ -304,6 +309,7 @@ class CRPoweredSelfDiscover:
 
         complete_solution_capsule["final_solution"] = self.language_model["answer"]
 
+        print ("############################ ||END SOLUTION|| ############################")
         return complete_solution_capsule["final_solution"], complete_solution_capsule
                             
 
@@ -315,7 +321,7 @@ class Judger:
         self.language_model = lm
         self.valid_correctness = ["Correct", "Wrong", "Unknown"]
 
-    def judger(self, question_content: str, question_subject: str, final_answer: str, ground_truth_answer: str):
+    def compare(self, question_content: str, question_subject: str, final_answer: str, ground_truth_answer: str):
         with system():
             self.language_model += """
         YOU ARE one of the GREATEST mathematicians, logicians, programmers, and AI scientists. You are intelligent and rational. You are prudent and cautious. Your mastery over Arithmetic, Combinatorics, Number Theory, Probability Theory, Algebra, Analysis, and Geometry is unparalleled. You THINK NATURAL, BROAD AND DEEP. Let's think step by step.
@@ -323,18 +329,18 @@ class Judger:
         """
         
         with user():
-            self.language_model += """
+            self.language_model += f"""
         Problem Subject: "{question_subject}", Problem Content: "{question_content}" 
-        """.format(question_subject=question_subject, question_content=question_content)
+        """
             
         with user():
-            self.language_model += """
+            self.language_model += f"""
         Now compare the final_answer and the ground_truth answer. Don't be strict on the format but check the content. Make sure to consider the context of the question when making your decision . 
         Is the final_answer correct, given the ground truth answer (ground_truth_answer)? In 25 words or less, think step by step and then decide on your answer of whether the final_answer matches the ground_truth_answer.
         If the two match, reply with Correct. If not, reply with Wrong. If you don't know, reply with Unknown.
         It is of utmost importance that you correctly analyze the two answers and make a correct judgement.\n\n
         "final_answer": "{final_answer}", \n"ground_truth_answer": "{ground_truth_answer}" 
-        """.format(final_answer=final_answer, ground_truth_answer=ground_truth_answer)
+        """
         
         with assistant():
             self.language_model += gen("explanation", temperature=0.0, max_tokens=30)

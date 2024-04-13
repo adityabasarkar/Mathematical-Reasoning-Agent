@@ -68,18 +68,20 @@ def worker(shared_data, counter_lock, pid: int, folder: str, start_dif: int, arg
     folder_dir = os.path.join(shared_data['data_dir'], "MATH", "test", folder)
     files = [os.path.join(folder_dir, file) for file in os.listdir(folder_dir) if os.path.isfile(os.path.join(folder_dir, file))]
 
+    gpt4 = guidance.models.OpenAIChat(model="gpt4-1106-preview", tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url=args.base_url)
+    lm = guidance.models.OpenAIChat(model=args.model, tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url=args.base_url)
+
+    math_agent = CRPoweredSelfDiscover(lm)
+    judge = Judger(gpt4)
+
 
     print(f"starting process: Process {pid}")
     print(f"Try Count: {args.answertrycnt}")
 
     for i in range(start_dif, 6, 1):
         for j in range(0, len(files)):
-            
-            gpt4 = guidance.models.OpenAIChat(model="gpt4-1106-preview", tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url=args.base_url)
-            lm = guidance.models.OpenAIChat(model=args.model, tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url=args.base_url)
 
-            math_agent = CRPoweredSelfDiscover(lm)
-            judge = Judger(gpt4)
+
 
             data = {}
             with open(files[j], 'r') as f:
@@ -112,33 +114,42 @@ def worker(shared_data, counter_lock, pid: int, folder: str, start_dif: int, arg
                         
                         print(f"PID: {pid} | In Lock")
                         shared_data['problem_count_dictionary']["{}|{}".format(folder, lvl)] -= 1
+                        print(f"1")
                         shared_data['num_solved'].value += 1
+                        print(f"2")
                         if judgement["correctness"] == "Correct":
                             shared_data['num_correct'].value += 1
+                        print(f"3")
+                        print(f"{shared_data['num_solved'].value}/{shared_data['total_num_problems']}")
+                        decim = shared_data['num_solved'].value / shared_data['total_num_problems']
+                        print("{}".format(decim))
+                        print("Type:" + data['type'])
+                        print("Correct?: " + judgement["correctness"])
+                        print("Sol: " + solution)
+                        print("True: " + data["solution"])
+                        print("Problem: " + data['problem'])
 
-                        jsonDump = {"PID": f"{pid}",
-                                    "Number Solved": f"{shared_data['num_solved'].value}/{shared_data['total_num_problems']}",
-                                    "Running Accuracy": "{}".format(round(shared_data['num_correct'].value / shared_data['num_solved'].value, 3)),
-                                    "Level": data["level"],
-                                    "Correctness": judgement["correctness"],
-                                    "Token Count": math_agent.language_model.token_count,
+                        jsonDump = {"Number Solved": f"{shared_data['num_solved'].value}/{shared_data['total_num_problems']}",
+                                    "Running Accuracy": "{}".format(shared_data['num_solved'].value / shared_data['total_num_problems']),
                                     "Question Type": data['type'],
+                                    "Correctness": judgement["correctness"],
                                     "Generated Solution": solution,
                                     "Actual Solution": data["solution"],
                                     "Question": data['problem']}
-                    
+                        print(f"4")
                         print(f"File Write ----------------------------------------------------------------------- PID: {pid}")
                         with open(shared_data['resultsFilePath'], 'a') as file:
                             json.dump(jsonDump, file)
                             file.write("\n")
                             file.flush()
-
-                        print(f"PID: {pid} | In Lock")
+                        print(f"5")
+                        print(f"PID: {pid} | Out Lock")
                     
                     break
 
                 except Exception as e:
-                    print(f"PID: {pid} | | Exception Print: " + e)
+                    print("Exception found")
+                    print(e)
                     tries += 1
             
 
