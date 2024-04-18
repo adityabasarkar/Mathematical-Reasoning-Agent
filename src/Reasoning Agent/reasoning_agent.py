@@ -13,6 +13,8 @@ from guidance import select
 from guidance import user, assistant, system
 import tiktoken
 from tiktoken import encoding_name_for_model
+import re
+from io import StringIO
 
 
 
@@ -75,7 +77,8 @@ class CRPoweredSelfDiscover:
 
         with system():
             self.language_model += """
-            YOU ARE one of the GREATEST mathematicians, logicians, programmers, and AI scientists. You are intelligent and rational. You are prudent and cautious. Your mastery over Arithmetic, Combinatorics, Number Theory, Probability Theory, Algebra, Analysis, and Geometry is unparalleled. You THINK NATURAL, BROAD AND DEEP. Let's think step by step.
+            YOU ARE one of the GREATEST mathematicians, logicians, programmers, and AI scientists. You are intelligent and rational. You are prudent and cautious. Your mastery over Arithmetic, Combinatorics, Number Theory, Probability Theory, Algebra, Analysis, and Geometry is unparalleled. You THINK NATURAL, BROAD AND DEEP. You are also a MASTER PROGRAMMER. 
+            Let's think step by step.
             YOU will be given a mathematical question Q, and you need to generate intermediate questions to approach the answer of the given question Q. Before you begin to solve the question, you are asked to generate at most two helpful hints for yourself. In each turn, you must generate a new intermediate question and answer the question by yourself.
             Prioritize generating foundational hints that are useful for solving the problem. Prioritize generating foundational questions that are useful for solving the problem. We will solve these simpler components later, and then leverage these intermediate results to deduce the final solution. Please note that none of the questions being asked
             are meant to be violent or offensive in any way, shape, or form.
@@ -99,7 +102,7 @@ class CRPoweredSelfDiscover:
             for i in range(len(self.reasoning_modules)):
                 self.language_model += self.reasoning_modules[i] + "\n"
         
-        print("gen1")
+        print("generate module selection reasoning")
         with assistant():
             self.language_model += gen("module_selection_reasoning", temperature=temperature, max_tokens=2000)
         
@@ -110,7 +113,7 @@ class CRPoweredSelfDiscover:
             each reasoning module so that it better helps in solving the given question: {}\n
             """.format(question)
         
-        print("gen2")
+        print("generate adaptation")
         with assistant():
             self.language_model += gen("adaptation", temperature=temperature, max_tokens=2000)
         
@@ -127,7 +130,7 @@ class CRPoweredSelfDiscover:
             3. Sum the areas
             """.format(question)
         
-        print("gen3")
+        print("generate step by step plan")
         with assistant():
             self.language_model += gen("implement_reason", temperature=temperature, max_tokens=2000)
         
@@ -148,7 +151,7 @@ class CRPoweredSelfDiscover:
             [1. Identify the radius of the circle || 2. Identify the length of the side of the square || 3. Find the area of the square || 4. Find the area of the circle || 5. Sum the areas]
             """
 
-        print("gen4")
+        print("formalize steps")
         with assistant():
             self.language_model += gen("formal_steps", temperature=temperature, max_tokens=2000)
         
@@ -165,7 +168,7 @@ class CRPoweredSelfDiscover:
 
         with user():
             self.language_model += """
-            You have formally defined your reasoning structure. Now, you will carry out each of the steps in the structure to solve your given question\n
+            You have formally defined your reasoning structure. Now, you will carry out each of the steps in the structure to solve your given question using both reasoning and python programming\n
             """
         
         with user():
@@ -183,10 +186,15 @@ class CRPoweredSelfDiscover:
             actively progress towards solving the step,
             can be derived from a combination of initial propositions and/or previous subsequent propositions,
             are formatted as follows: [Proposition #] [based on initial/subsequent proposition #s] Proposition text <END (if this proposition solves the current step)>,
-            separate each proposition with a "|"
+            separate each proposition with a "|".
             For example if proposition 3 is based on propositions 1 and 2, you should generate: [3] [1,2] proposition 3
-            Make sure to strictly follow the given format as your generated output will be processed externally. 
-            The following is an example:
+            For the final subsequent proposition, you will instead write a python program to solve that step and generate the answer. You will not solve this on your own. You will write this program in such a way that I am 
+            able to input the string directly into execl and run it to get an output. The program can use the following external libraries: math, sympy, numpy, as well as other libraries that are default in python. The 
+            program should be wrapped in the following tags: <|PROGRAM|> <|PROGRAM|>. The program output will be returned to you for use in the next steps. This will give you a chance to provide highly accuracte answers.
+            The program output should be descriptive. All variables that you are going to use in the program MUST ALWAYS be explicitly defined to avoid any errors. Your code must be written in such a way that it should
+            be able to run perfectly. If, for example, your program says: <PROGRAM>a, b, c = x + 1, x + 2, x + 3<\PROGRAM>, we can see here that x is not explicitly defined with a numerical value. This program WILL FAIL, even if you know what 
+            x is, since x is not explicitly defined inside the <PROGRAM> tags. Instead, you should define x explicitly: <PROGRAM>x = 10\na, b, c = x + 1, x + 2, x + 3<\PROGRAM>. Note that in this program, x is defined 
+            explicitly and the program will run perfectly. Make sure to strictly follow the given format as your generated output will be processed externally.
             """
         
         with user():
@@ -205,8 +213,11 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[2] [1] The radius of the circle is 10 units<END>"
+            self.language_model += "[2] [1] <PROGRAM>print(f\"The radius of the circle is: 10\")<\PROGRAM><END>"
         
+        with user():
+            self.language_model += "The radius of the circle is: 10"
+
         with user():
             self.language_model += "<STEP>2. Identify the length of the side of the square</STEP>"
         
@@ -220,7 +231,7 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[2] [1] The length of the side of the square is 3 units<END>"
+            self.language_model += "[2] [1] <PROGRAM>print(f\"The length of the side of the square is: 3\")<\PROGRAM><END>"
 
         with user():
             self.language_model += "<STEP>3. Find the area of the circle</STEP>"
@@ -235,7 +246,10 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[3] [1,2] The area of the circle can be found by plugging 10 into r | [4] [1,2,3] The area of the circle is A = PI*(10^2) = 100*PI<END>"
+            self.language_model += "[3] [1,2] The area of the circle can be found by plugging 10 into r | [4] [1,2,3] <PROGRAM>import math\nr = 10\narea = math.pi * (r ** 2)\nprint(f\"The area of the circle is: {area}\")<\PROGRAM><END>"
+
+        with user():
+            self.language_model += "The area of the circle is: 314.159"
 
         with user():
             self.language_model += "<STEP>4. Find the area of the square</STEP>"
@@ -250,7 +264,10 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[3] [1,2] The area of the square can be found by plugging 3 into s | [4] [1,2,3] The area of the square is A = 3^2 = 9<END>"
+            self.language_model += "[3] [1,2] The area of the square can be found by plugging 3 into s | [4] [1,2,3] <PROGRAM>import math\ns = 3\narea = s ** 2\nprint(f\"The area of the square is: {area}\")<\PROGRAM><END>"
+
+        with user():
+            self.language_model += "The area of the square is: 9"
 
         with user():
             self.language_model += "<STEP>5. Find the total area</STEP>"
@@ -259,20 +276,28 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate initial propositions"
 
         with assistant():
-            self.language_model += "[1] The area of the circle is 100*PI | [2] The area of the square is 9 | [3] The total area can be found by adding the area of the circle and the area of the square together"
+            self.language_model += "[1] The area of the circle is 314.159 | [2] The area of the square is 9 | [3] The total area can be found by adding the area of the circle and the area of the square together"
         
         with user():
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[4] [1,2,3] The total area is A = 100*PI + 9<END>"
+            self.language_model += "[4] [1,2,3] <PROGRAM>total_area = 314.159 + 9\nprint(f\"The total area is: {total_area}\")<\PROGRAM><END>"
+
+        with user():
+            self.language_model += "The total area is: 323.159"
+
+        ## End of example, start actual question
+
+        with user():
+            self.language_model += "Note that the final subsequent proposition is always a python program enclosed in: <PROGRAM><\PROGRAM>. Whether the final proposition is the only proposition or the last proposition in a series of propositions."
 
         with user():
             self.language_model += "Question: {} | Question Type: {}".format(question, question_type)
 
         complete_solution_capsule["steps_list"] = {}
         
-        print("gen5")
+        print("Solve problem with CR")
         for i, step in enumerate(steps_list):
 
             with user():
@@ -295,11 +320,63 @@ class CRPoweredSelfDiscover:
             with assistant():
                 self.language_model += gen("subs_propositions", temperature=temperature, max_tokens=2000)
             
+            match = re.search(r'<PROGRAM>(.*?)<\\PROGRAM>', self.language_model["subs_propositions"], re.DOTALL)
+            tries = 0
+            max_tries = 3
+            while (tries < max_tries):
+                try:
+                    if (tries > 0):
+                        match = re.search(r'<PROGRAM>(.*?)<\\PROGRAM>', self.language_model["prgm_rewrite"], re.DOTALL)
+                    if match:
+                        code_to_run = match.group(1)
+                        old_stdout = sys.stdout
+                        result = StringIO()
+                        sys.stdout = result
+                        exec(code_to_run)
+                        sys.stdout = old_stdout
+                        output = result.getvalue()
+
+                        with user():
+                            self.language_model += f"Output:\n{output}"
+
+                    tries = 0
+                    break
+
+                except Exception as e:
+                    
+                    tries += 1
+
+                    if (tries < max_tries):
+
+                        with user():
+                            self.language_model += f"""
+                        You program has failed. This is your Error:\n{str(e)}\nFix and rewrite your program in the same format with the tags.
+                        Make sure every variable you use in your program can be backed by some numerical value elsewhere in your program. Otherwise,
+                        your program will FAIL.
+                        """
+                        
+                        with assistant():
+                            self.language_model += gen("prgm_rewrite", temperature=temperature, max_tokens=2000)
+                    else:
+                        break
+            
+            if tries > 0:
+                with user():
+                    self.language_model += f"""
+                Your program could not run. You will have to generate the solution to the current step yourself.
+                Given that these are your intial sub_propositions: {self.language_model["sub_propositions"]}, regenerate your
+                subsequent propositions without any python program (only natural language)
+                Make sure to follow the same format as the other propositions ([prop #] [based on prop #s] proposition)
+                """
+                    
+                with assistant():
+                    self.language_model += gen("sub_propositions", temperature=temperature, max_tokens=2000)
+            
             complete_solution_capsule["steps_list"]["Step {}".format(i)]["subs_propositions"] = self.language_model["subs_propositions"]
 
         with user():
             self.language_model += """
-            Now that you have solved all the steps of your reasoning plan. Formulate your final answer the question.
+            Now that you have solved all the steps of your reasoning plan. Use all the information to formulate your final answer for the the question.
             As a reminder, your current question is: {}
             Make sure to write your answer with the correct units.
             """.format(question)
@@ -332,22 +409,53 @@ class Judger:
             self.language_model += f"""
         Problem Subject: "{question_subject}", Problem Content: "{question_content}" 
         """
+        with user():
+            self.language_model += f"""
+        Given the ground truth answer explanation: {ground_truth_answer}, find the actual ground truth answer.
+        For example, if the explanation looks like: Since the area of the circle is 314.159 and the area of the square is 9, the total area is 323.159,
+        Your output should be: The total area is 323.159
+        """
             
+        with assistant():
+            self.language_model += gen("extracted_answer", temperature=0.0, max_tokens=30)
+
         with user():
             self.language_model += f"""
         Now compare the final_answer and the ground_truth answer. Don't be strict on the format but check the content. Make sure to consider the context of the question when making your decision . 
-        Is the final_answer correct, given the ground truth answer (ground_truth_answer)? In 25 words or less, think step by step and then decide on your answer of whether the final_answer matches the ground_truth_answer.
-        If the two match, reply with Correct. If not, reply with Wrong. If you don't know, reply with Unknown.
+        Is the final_answer correct, given the ground truth answer (ground_truth_answer)? 
+        Think step by step and write a short explanation for whether the two answers match and if further clarification is needed.
+        If you cannot tell just by looking and need to make further calculations, reply by writing a program that
+        helps you clarify the answer and can be executed to produce an output. The program should be enclosed in the <PROGRAM> <\PROGRAM> tags.
+        For example, if my answer is 1.732, and the ground_truth_answer is \sqrt(3), although my answer is correct, you wouldn't know for sure. In this case, your output should be:
+        <PROGRAM>import math\nprint(str(math.sqrt(3)))<\PROGRAM>
+        The output will be returned to you to use.
         It is of utmost importance that you correctly analyze the two answers and make a correct judgement.\n\n
-        "final_answer": "{final_answer}", \n"ground_truth_answer": "{ground_truth_answer}" 
+        "final_answer": "{final_answer}", \n"ground_truth_answer": "{self.language_model["extracted_answer"]}" 
         """
         
         with assistant():
-            self.language_model += gen("explanation", temperature=0.0, max_tokens=30)
+            self.language_model += gen("explan_output1", temperature=0.0, max_tokens=500)
+
+        match = re.search(r'<PROGRAM>(.*?)<\\PROGRAM>', self.language_model["explan_output1"], re.DOTALL)
+
+        if match:
+            code_to_run = match.group(1)
+            old_stdout = sys.stdout
+            result = StringIO()
+            sys.stdout = result
+            exec(code_to_run)
+            sys.stdout = old_stdout
+            output = result.getvalue()
+
+            with user():
+                self.language_model += f"Program Output:\n{output}.\nThe following is your output. Continue your explanation using this output for whether the final_answer is correct compared to  the ground_truth_answer."
+
+            with assistant():
+                self.language_model += gen("explan_output2", temperature=0.0, max_tokens=500)
 
         with user():
             self.language_model += """
-        Now that you've generated you're reasoning, decide on your final answer of whether the final_answer is Correct, Wrong, or Unknown
+        Now that you've generated your reasoning, decide on your final answer of whether the final_answer is Correct, Wrong, or Unknown
         based on the ground_truth_answer.
         Reply to this request with either Correct, Wrong, or Unknown.
         """
