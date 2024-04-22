@@ -37,7 +37,7 @@ sys.path.append(main_dir)
 sys.path.append(config_dir)
 sys.path.append(reasoning_agent_dir)
 sys.path.append(data_dir)
-from reasoning_agent import CRPoweredSelfDiscover, Judger
+from reasoning_agent import CRPoweredSelfDiscover, Judger, CummulativeReasoning
 
 # Load API keys
 load_dotenv(os.path.join(config_dir, ".env"))

@@ -46,7 +46,7 @@ math_agent = CRPoweredSelfDiscover(lm)
 judge = Judger(gpt4)
 
 data = {}
-data_path = os.path.join(data_dir, "MATH", "test", "geometry", "982.json")
+data_path = os.path.join(data_dir, "MATH", "test", "intermediate_algebra", "90.json")
 with open(data_path, 'r') as f:
     data = json.load(f)
 question = data["problem"]

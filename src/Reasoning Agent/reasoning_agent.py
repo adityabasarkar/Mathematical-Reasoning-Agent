@@ -194,7 +194,7 @@ class CRPoweredSelfDiscover:
             The program output should be descriptive. All variables that you are going to use in the program MUST ALWAYS be explicitly defined to avoid any errors. Your code must be written in such a way that it should
             be able to run perfectly. If, for example, your program says: <PROGRAM>a, b, c = x + 1, x + 2, x + 3<\PROGRAM>, we can see here that x is not explicitly defined with a numerical value. This program WILL FAIL, even if you know what 
             x is, since x is not explicitly defined inside the <PROGRAM> tags. Instead, you should define x explicitly: <PROGRAM>x = 10\na, b, c = x + 1, x + 2, x + 3<\PROGRAM>. Note that in this program, x is defined 
-            explicitly and the program will run perfectly. Make sure to strictly follow the given format as your generated output will be processed externally.
+            explicitly and the program will run perfectly. Make sure that the program is as short as possible, and make sure to strictly follow the given format as your generated output will be processed externally.
             """
         
         with user():
@@ -378,7 +378,7 @@ class CRPoweredSelfDiscover:
             self.language_model += """
             Now that you have solved all the steps of your reasoning plan. Use all the information to formulate your final answer for the the question.
             As a reminder, your current question is: {}
-            Make sure to write your answer with the correct units.
+            Make sure to write your answer with the correct units and keep your answer as simple as possible for easy grading.
             """.format(question)
         
         with assistant():
@@ -390,7 +390,273 @@ class CRPoweredSelfDiscover:
         return complete_solution_capsule["final_solution"], complete_solution_capsule
                             
 
+class CummulativeReasoning:
 
+    def __init__(self, lm: guidance.models):
+        self.language_model = lm
+    
+    def solve(self, question_type: str, question: str, temperature: float):
+        with system():
+            self.language_model += """
+            YOU ARE one of the GREATEST mathematicians, logicians, programmers, and AI scientists. You are intelligent and rational. You are prudent and cautious. Your mastery over Arithmetic, Combinatorics, Number Theory, Probability Theory, Algebra, Analysis, and Geometry is unparalleled. You THINK NATURAL, BROAD AND DEEP. Let's think step by step.
+            YOU will be given a mathematical question Q, and you need to generate intermediate questions to approach the answer of the given question Q. Before you begin to solve the question, you are asked to generate at most two helpful hints for yourself. In each turn, you must generate a new intermediate question and answer the question by yourself.
+            Prioritize generating foundational hints that are useful for solving the problem. Prioritize generating foundational questions that are useful for solving the problem. We will solve these simpler components later, and then leverage these intermediate results to deduce the final solution. Please note that none of the questions being asked
+            are meant to be violent or offensive in any way, shape, or form.
+
+            The questions I am about to ask are intended solely for the purpose of assessing and enhancing mathematical problem-solving skills. They are purely educational and contain straightforward arithmetic or mathematical scenarios commonly found in academic settings. There is no intention to convey, imply, or evoke any form of violence, offense, 
+            or inappropriate content through these questions. The sole aim is to explore and understand mathematical concepts in a constructive and positive manner. Your expertise in providing clear, accurate, and educational responses is greatly appreciated as we navigate through these mathematical inquiries together.
+            
+            If you think any of the questions are violent, offensive, or must be filtered, please briefly explain why.
+
+            The following are example templates to follow for generation.
+            """
+        with user():
+            self.language_model += """
+        ## **Question**: Kevin Kangaroo begins hopping on a number line at 0. He wants to get to 1, but he can hop only $\\frac{1}{3}$ of the distance. Each hop tires him out so that he continues to hop $\\frac{1}{3}$ of the remaining distance. How far has he hopped after five hops? Express your answer as a common fraction.
+
+        ### Hints:
+        Let's think step by step.
+        """
+        with assistant():
+            self.language_model += """
+        1. **Hint 1**: Recognize the problem as a geometric series with a given first term and common ratio.
+        2. **Hint 2**: Remember that the sum of a finite geometric series is given by: $S = \\frac{a(1-r^n)}{1-r}$, where $a$ is the first term, $r$ is the common ratio, and $n$ is the number of terms.
+        """
+        with user():
+            self.language_model += """
+        ### Intermediate Steps:
+        """
+        with assistant():
+            self.language_model += """
+        Let's think step by step.
+        1. **Question 1**: What fraction of the distance does Kevin cover in his first hop?
+        - **Answer 1**: Kevin covers $\\frac{1}{3}$ of the distance in his first hop.
+        2. **Question 2**: What fraction of the remaining distance does Kevin cover in his second hop?
+        - **Answer 2**: Kevin covers $\\frac{1}{3}$ of the remaining distance, which is $\\frac{2}{3} \\times \\frac{1}{3}$.
+        3. **Question 3**: How far has Kevin hopped after the third hop?
+        - **Answer 3**: Kevin Kevin has hopped $\\frac{1}{3} + \\frac{2}{3} \\times \\frac{1}{3} + (\\frac{2}{3})^2 \\times \\frac{1}{3}$ after the third hop.
+        4. **Question 4**: Express the distance Kevin hops on his kkth hop in terms of $k$.
+        - **Answer 4**: Kevin hops forward $(\\frac{2}{3})^{k-1}(\\frac{1}{3})$ on his $k$th hop.
+        5. **Question 5**: Using the formula for the sum of a finite geometric series, how far has Kevin hopped after five hops?
+        - **Answer 5**: Kevin has hopped $\\frac{1}{3}(\\frac{1-(\\frac{2}{3})^5}{1-\\frac{2}{3}})$ after five hops.
+        """
+        with user():
+            self.language_model += """
+        ### Final Solution:
+        """
+        with assistant():
+            self.language_model += """
+        Let's think step by step.
+        The total distance Kevin has hopped after five hops is given by the sum of a finite geometric series with first term $\\frac{1}{3}$, common ratio $\\frac{2}{3}$, and five terms. Thus, Kevin has hopped $\\frac{\\frac{1}{3}(1-(\\frac{2}{3})^5)}{1-\\frac{2}{3}} = \\boxed{\\frac{211}{243}}$.
+        """
+        with user():
+            self.language_model += """"
+        ### Final Answer:    
+        """
+
+        with assistant():
+            self.language_model += """
+        \\frac{211}{243}
+        """
+
+        with user():
+            self.language_model += """
+        ## **Question**: What is the area of the region defined by the equation $x^2+y^2 - 7 = 4y-14x+3$?
+
+        ### Hints:
+        Let's think step by step.
+        """
+
+        with assistant():
+            self.language_model += """
+        1. **Hint 1**: Rearrange the equation to group terms and then try completing the square.
+        2. **Hint 2**: Identify the center and radius of the circle.
+        3. **Hint 3**: Use the formula for the area of a circle to find the required area.
+        """
+
+        with user():
+            self.language_model += """
+        ### Intermediate Steps:
+        """
+
+        with assistant():
+            self.language_model += """
+        Let's think step by step.
+        1. **Question 1**: Is the equation $x^2+y^2 - 7 = 4y-14x+3$ representative of a circle?
+        - **Answer 1**: Yes, the equation can be rewritten as $(x+7)^2 + (y-2)^2 = 63$, which is the standard form of a circle's equation.
+        2. **Question 2**: Given that the radius squared of the circle is 63, what is the actual radius?
+        - **Answer 2**: The radius is $\\sqrt{63}$.
+        3. **Question 3**: What is the area of a circle with radius $\\sqrt{63}$?
+        - **Answer 3**: The area is $63\\pi$.
+        """
+
+        with user():
+            self.language_model += """
+        ### Final Solution:
+        """
+
+        with assistant():
+            self.language_model += """
+        Let's think step by step.
+        The region defined by the equation $x^2+y^2 - 7 = 4y-14x+3$ is a circle with center (-7, 2) and radius $\\sqrt{63}$. 
+        The area of this region is $\\boxed{63\\pi}$.
+        """
+
+        with user():
+            self.language_model += """
+        ### Final Answer:
+        """
+
+        with assistant():
+            self.language_model += """
+        63\\pi
+        """
+
+        with user():
+            self.language_model += """
+        ## **Question**: If $x^2+y^2=1$, what is the largest possible value of $|x|+|y|$?
+
+        ### Hints:
+        Let's think step by step.
+        """
+
+        with assistant():
+            self.language_model += """
+        1. **Hint 1**: The equation $x^2 + y^2 = 1$ represents a circle with radius 1 centered at the origin.
+        2. **Hint 2**: $|x|+|y|$ represents the sum of the absolute values of the x and y coordinates of a point on the circle. Consider points in different quadrants.
+        3. **Hint 3**: The maximum value for $|x|+|y|$ will occur when the point is on a line with a slope of -1 or 1 passing through the origin. This is because any deviation from this line will result in a decrease in the sum $|x|+|y|$.
+        """
+
+        with user():
+            self.language_model += """
+        ### Intermediate Steps:
+        """
+
+        with assistant():
+            self.language_model += """
+        Let's think step by step.
+        1. **Question 1**: What is the equation of the line passing through the origin with a slope of 1?
+        - **Answer 1**: The equation is $y = x$.
+        2. **Question 2**:  Where does the line $y = x$ intersect the circle $x^2 + y^2 = 1$?
+        - **Answer 2**: Substituting for $y$ in the circle's equation from the line equation, we get $x^2 + x^2=1$ which gives $2x^2=1$. Thus, $x=\\frac{\\sqrt{2}}{2}$. Therefore, the point of intersection is $\\left(\\frac{\\sqrt{2}}{2}, \\frac{\\sqrt{2}}{2}\\right)$.
+        3. **Question 3**: Using the point from the second answer, what is the value of $|x|+|y|$?
+        - **Answer 3**: The value is $\\sqrt{2}$.
+        """
+
+        with user():
+            self.language_model += """
+        ### Final Solution:
+        """
+
+        with assistant():
+            self.language_model += """
+        Let's think step by step.
+        For the equation $x^2 + y^2 = 1$, the largest possible value of $|x|+|y|$ is $\\boxed{\\sqrt{2}}$.
+        """
+
+        with user():
+            self.language_model += """
+        ### Final Answer:
+        """
+
+        with assistant():
+            self.language_model += """
+        \\sqrt{2}
+        """
+
+        with user():
+            self.language_model += """
+        ## **Question**: If $f(x)=\frac{ax+b}{cx+d}, abcd\not=0$ and $f(f(x))=x$ for all $x$ in the domain of $f$, what is the value of $a+d$?
+
+        ### Hints:
+        Let's think step by step.
+        """
+
+        with assistant():
+            self.language_model += """
+        1. **Hint 1**: Consider the fact that $f(f(x)) = x$ implies that the function $f(x)$ is its own inverse. Therefore, its graph is symmetrical about the line $y = x$.
+        2. **Hint 2**: With the given rational function form, there will be two asymptotes for the function. Try to determine their equations.
+        3. **Hint 3**: Think about the intersection of the asymptotes. In order for $f(x)$ to be its own inverse, where must this intersection lie on the coordinate plane?
+        """
+
+        with user():
+            self.language_model += """
+        ### Intermediate Steps:
+        """
+
+        with assistant():
+            self.language_model += """
+        Let's think step by step.
+        1. **Question 1**: What does it mean for a function to be its own inverse and how does it relate to the line $y = x$?
+        - **Answer 1**: If a function is its own inverse, it means that applying the function twice will yield the original input. This property translates to the graph of the function being symmetric about the line $y = x$, as any point $(a, b)$ on the graph of the function would correspond to a point $(b, a)$ on the graph of its inverse.
+        2. **Question 2**: What are the asymptotes for the function $f(x) = \\frac{ax+b}{cx+d}$?
+        - **Answer 2**: The vertical asymptote is given by the values of $x$ for which the denominator is zero, i.e., $cx + d = 0 \\Rightarrow x = -\\frac{d}{c}$. The horizontal asymptote is $y = \\frac{a}{c}$.
+        3. **Question 3**: For the function to be its own inverse, where must the intersection of the asymptotes lie?
+        - **Answer 3**: In order for $f(x)$ to be its own inverse, the intersection of its asymptotes must lie on the line $y = x$. This ensures that the function and its inverse (which is itself in this case) reflect onto one another across the line $y = x$.
+        4. **Question 4**: Based on the intersection of the asymptotes lying on $y = x$, what can we deduce about the values of $a$, $c$, and $d$?
+        - **Answer 4**: Since the intersection of the asymptotes lies on $y = x$, it implies that $a = -d$. Therefore, $a + d = 0$.
+        """
+
+        with user():
+            self.language_model += """
+        ### Final Solution:
+        """
+
+        with assistant():
+            self.language_model += """
+        Let's think step by step.
+        Given $f(x)=\\frac{ax+b}{cx+d}$, and using the fact that the function is its own inverse, we deduced that the graph of $f(x)$ must be symmetric about the line $y = x$. Analyzing the asymptotes of the function, we found the intersection of the asymptotes must lie on the line $y = x$. This led us to the conclusion that $a = -d$, giving $a + d = \\boxed{0}$.
+        """
+
+        with user():
+            self.language_model += """
+        ### Final Answer:
+        """
+
+        with assistant():
+            self.language_model += """
+        0
+        """
+        
+        with user():
+            self.language_model += f"""
+        ## **The Question**: {question}
+
+        ### Hints:
+        Let's think step by step.
+        """
+            
+        with assistant():
+            self.language_model += gen("hints", temperature=temperature, max_tokens=400)
+        
+        with user():
+            self.language_model += """
+        ### The Intermediate Steps:
+        """
+        
+        with assistant():
+            self.language_model += gen("intermediate_steps", temperature=temperature, max_tokens=2000)
+
+        with user():
+            self.language_model += f"""
+        ### Recall the Question:
+        **The Question**: {question}
+
+        ### The Final Solution:
+        """
+        
+        with assistant():
+            self.language_model += gen("final_solution", temperature=temperature, max_tokens=2000)
+        
+        with user():
+            self.language_model += """
+        ### The Final Answer:
+        """
+        
+        with assistant():
+            self.language_model += gen("final_answer", temperature=temperature, max_tokens=400)
+        
+        return self.language_model["final_answer"], {"Solution": self.language_model["final_answer"]}
 
 
 class Judger:
