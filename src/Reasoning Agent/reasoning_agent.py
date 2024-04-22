@@ -128,6 +128,12 @@ class CRPoweredSelfDiscover:
             1. Find the area of the square
             2. Find the area of the circle
             3. Sum the areas
+
+            Make sure to: Include what is necessary in the plan to reduce costs of generated output (meaning that no
+            self verfication is needed), only work to solve the problem and nothing else, and stay at or
+            under 8 steps. The last step should effectively solve the problem.
+            Remember that each step has to be completely and logically relevant to solving the problem and should logically follow from the previous steps that have been generated.
+            These steps should be carefully considered as you will be using them to solve the overall problem. 
             """.format(question)
         
         print("generate step by step plan")
@@ -140,8 +146,7 @@ class CRPoweredSelfDiscover:
             self.language_model += """
             Now that you have reasoned through how the reasoning structure should look and proposed
             a reasoning structure for the given question, formalize your reasoning structure by encapsulating
-            in the specified format. You may include any number of steps required for solving the question.
-            Do not include anything more or less in your generated answer than the steps in the specified format as your
+            in the specified format. Do not include anything more or less in your generated answer than the steps in the specified format as your
             generated answer will be externally processed.
 
             Format:
@@ -188,13 +193,15 @@ class CRPoweredSelfDiscover:
             are formatted as follows: [Proposition #] [based on initial/subsequent proposition #s] Proposition text <END (if this proposition solves the current step)>,
             separate each proposition with a "|".
             For example if proposition 3 is based on propositions 1 and 2, you should generate: [3] [1,2] proposition 3
+
             For the final subsequent proposition, you will instead write a python program to solve that step and generate the answer. You will not solve this on your own. You will write this program in such a way that I am 
             able to input the string directly into execl and run it to get an output. The program can use the following external libraries: math, sympy, numpy, as well as other libraries that are default in python. The 
-            program should be wrapped in the following tags: <|PROGRAM|> <|PROGRAM|>. The program output will be returned to you for use in the next steps. This will give you a chance to provide highly accuracte answers.
+            program should be wrapped in the following tags: <PROGRAM> </PROGRAM>. The program output will be returned to you for use in the next steps. This will give you a chance to provide highly accuracte answers.
             The program output should be descriptive. All variables that you are going to use in the program MUST ALWAYS be explicitly defined to avoid any errors. Your code must be written in such a way that it should
             be able to run perfectly. If, for example, your program says: <PROGRAM>a, b, c = x + 1, x + 2, x + 3<\PROGRAM>, we can see here that x is not explicitly defined with a numerical value. This program WILL FAIL, even if you know what 
-            x is, since x is not explicitly defined inside the <PROGRAM> tags. Instead, you should define x explicitly: <PROGRAM>x = 10\na, b, c = x + 1, x + 2, x + 3<\PROGRAM>. Note that in this program, x is defined 
-            explicitly and the program will run perfectly. Make sure that the program is as short as possible, and make sure to strictly follow the given format as your generated output will be processed externally.
+            x is, since x is not explicitly defined inside the <PROGRAM> tags. Instead, you should define x explicitly: <PROGRAM>x = 10\na, b, c = x + 1, x + 2, x + 3</PROGRAM>. Note that in this program, x is defined 
+            explicitly and the program will run perfectly. Make sure that the program is as short and brief as possible, make sure that all signs (positive or negative) are reviewed and accounted for when generating steps, 
+            and make sure to strictly follow the given format as your generated output will be processed externally.
             """
         
         with user():
@@ -213,7 +220,7 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[2] [1] <PROGRAM>print(f\"The radius of the circle is: 10\")<\PROGRAM><END>"
+            self.language_model += "[2] [1] <PROGRAM>print(f\"The radius of the circle is: 10\")</PROGRAM><END>"
         
         with user():
             self.language_model += "The radius of the circle is: 10"
@@ -231,7 +238,7 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[2] [1] <PROGRAM>print(f\"The length of the side of the square is: 3\")<\PROGRAM><END>"
+            self.language_model += "[2] [1] <PROGRAM>print(f\"The length of the side of the square is: 3\")</PROGRAM><END>"
 
         with user():
             self.language_model += "<STEP>3. Find the area of the circle</STEP>"
@@ -246,7 +253,7 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[3] [1,2] The area of the circle can be found by plugging 10 into r | [4] [1,2,3] <PROGRAM>import math\nr = 10\narea = math.pi * (r ** 2)\nprint(f\"The area of the circle is: {area}\")<\PROGRAM><END>"
+            self.language_model += "[3] [1,2] The area of the circle can be found by plugging 10 into r | [4] [1,2,3] <PROGRAM>import math\nr = 10\narea = math.pi * (r ** 2)\nprint(f\"The area of the circle is: {area}\")</PROGRAM><END>"
 
         with user():
             self.language_model += "The area of the circle is: 314.159"
@@ -264,7 +271,7 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[3] [1,2] The area of the square can be found by plugging 3 into s | [4] [1,2,3] <PROGRAM>import math\ns = 3\narea = s ** 2\nprint(f\"The area of the square is: {area}\")<\PROGRAM><END>"
+            self.language_model += "[3] [1,2] The area of the square can be found by plugging 3 into s | [4] [1,2,3] <PROGRAM>import math\ns = 3\narea = s ** 2\nprint(f\"The area of the square is: {area}\")</PROGRAM><END>"
 
         with user():
             self.language_model += "The area of the square is: 9"
@@ -282,7 +289,7 @@ class CRPoweredSelfDiscover:
             self.language_model += "Generate subsequent propositions"
 
         with assistant():
-            self.language_model += "[4] [1,2,3] <PROGRAM>total_area = 314.159 + 9\nprint(f\"The total area is: {total_area}\")<\PROGRAM><END>"
+            self.language_model += "[4] [1,2,3] <PROGRAM>total_area = 314.159 + 9\nprint(f\"The total area is: {total_area}\")</PROGRAM><END>"
 
         with user():
             self.language_model += "The total area is: 323.159"
@@ -290,7 +297,7 @@ class CRPoweredSelfDiscover:
         ## End of example, start actual question
 
         with user():
-            self.language_model += "Note that the final subsequent proposition is always a python program enclosed in: <PROGRAM><\PROGRAM>. Whether the final proposition is the only proposition or the last proposition in a series of propositions."
+            self.language_model += "Note that the final subsequent proposition is always a python program enclosed in: <PROGRAM></PROGRAM> (The last part of the tag is a forward slash, not a backward). Whether the final proposition is the only proposition or the last proposition in a series of propositions."
 
         with user():
             self.language_model += "Question: {} | Question Type: {}".format(question, question_type)
@@ -315,27 +322,36 @@ class CRPoweredSelfDiscover:
             complete_solution_capsule["steps_list"]["Step {}".format(i)]["init_propositions"] = self.language_model["init_propositions"]
 
             with user():
-                self.language_model += "Generate subsequent propositions"
+                self.language_model += """Generate subsequent propositions. For the final program, make sure: 
+                1. All variables explicitly defined within the script itself before use, except for constants from the Python math library, which can be used directly. Keep in mind that the program you write is completely
+                isolated from the rest of your output. This means that what is run inside the program tags cannot leverage any of the variables you define outside the program tag.
+                Examples of how you would define variables include: x = 10, y = math.sqrt(3), z = math.ceil(math.pow(3.14, 2))
+                2. Only use the variables that are defined with numbers to produce new output. Example: In the previous step, the variables x, y, and z, were all defined. So the program can and should only use these variables to
+                produce the final output.
+                3. Not to use any recursion and avoid any overcomplication of the code, that might cause errors. 
+                The goal of these steps is to avoid any errors that involve undefined numbers.
+                4. Not to write programs that would take too long to run, or do infinite loops.
+                """
             
             with assistant():
                 self.language_model += gen("subs_propositions", temperature=temperature, max_tokens=2000)
             
-            match = re.search(r'<PROGRAM>(.*?)<\\PROGRAM>', self.language_model["subs_propositions"], re.DOTALL)
+            match = re.search(r'<PROGRAM>(.*?)</PROGRAM>', self.language_model["subs_propositions"], re.DOTALL)
             tries = 0
             max_tries = 3
+            old_stdout = sys.stdout
             while (tries < max_tries):
                 try:
                     if (tries > 0):
-                        match = re.search(r'<PROGRAM>(.*?)<\\PROGRAM>', self.language_model["prgm_rewrite"], re.DOTALL)
+                        match = re.search(r'<PROGRAM>(.*?)</PROGRAM>', self.language_model["prgm_rewrite"], re.DOTALL)
                     if match:
+                        print("Running Program")
                         code_to_run = match.group(1)
-                        old_stdout = sys.stdout
                         result = StringIO()
                         sys.stdout = result
                         exec(code_to_run)
                         sys.stdout = old_stdout
                         output = result.getvalue()
-
                         with user():
                             self.language_model += f"Output:\n{output}"
 
@@ -344,13 +360,16 @@ class CRPoweredSelfDiscover:
 
                 except Exception as e:
                     
+                    sys.stdout = old_stdout
+                    print(str(e))
                     tries += 1
 
                     if (tries < max_tries):
 
                         with user():
                             self.language_model += f"""
-                        You program has failed. This is your Error:\n{str(e)}\nFix and rewrite your program in the same format with the tags.
+                        You program has failed. This is your Error:\n{str(e)}\nFirst, reflect on why the error occured, what you did wrong, what can be done 
+                        to fix the program, and what steps you'll take. Then, fix and rewrite your program in the same format with the tags <PROGRAM></PROGRAM>.
                         Make sure every variable you use in your program can be backed by some numerical value elsewhere in your program. Otherwise,
                         your program will FAIL.
                         """
@@ -677,9 +696,7 @@ class Judger:
         """
         with user():
             self.language_model += f"""
-        Given the ground truth answer explanation: {ground_truth_answer}, find the actual ground truth answer.
-        For example, if the explanation looks like: Since the area of the circle is 314.159 and the area of the square is 9, the total area is 323.159,
-        Your output should be: The total area is 323.159
+        Given the ground truth answer explanation: {ground_truth_answer}, just state the actual answer that is boxed. This is the actual answer that is extracted from the ground truth answer
         """
             
         with assistant():
@@ -691,10 +708,10 @@ class Judger:
         Is the final_answer correct, given the ground truth answer (ground_truth_answer)? 
         Think step by step and write a short explanation for whether the two answers match and if further clarification is needed.
         If you cannot tell just by looking and need to make further calculations, reply by writing a program that
-        helps you clarify the answer and can be executed to produce an output. The program should be enclosed in the <PROGRAM> <\PROGRAM> tags.
+        helps you clarify the answer and can be executed to produce an output. The program should be enclosed in the <PROGRAM> </PROGRAM> tags.
         For example, if my answer is 1.732, and the ground_truth_answer is \sqrt(3), although my answer is correct, you wouldn't know for sure. In this case, your output should be:
-        <PROGRAM>import math\nprint(str(math.sqrt(3)))<\PROGRAM>
-        The output will be returned to you to use.
+        <PROGRAM>import math\nprint(str(math.sqrt(3)))</PROGRAM>
+        The output of the program will be returned to you to use.
         It is of utmost importance that you correctly analyze the two answers and make a correct judgement.\n\n
         "final_answer": "{final_answer}", \n"ground_truth_answer": "{self.language_model["extracted_answer"]}" 
         """
@@ -702,19 +719,23 @@ class Judger:
         with assistant():
             self.language_model += gen("explan_output1", temperature=0.0, max_tokens=500)
 
-        match = re.search(r'<PROGRAM>(.*?)<\\PROGRAM>', self.language_model["explan_output1"], re.DOTALL)
+        match = re.search(r'<PROGRAM>(.*?)</PROGRAM>', self.language_model["explan_output1"], re.DOTALL)
 
         if match:
             code_to_run = match.group(1)
-            old_stdout = sys.stdout
-            result = StringIO()
-            sys.stdout = result
-            exec(code_to_run)
-            sys.stdout = old_stdout
-            output = result.getvalue()
-
-            with user():
-                self.language_model += f"Program Output:\n{output}.\nThe following is your output. Continue your explanation using this output for whether the final_answer is correct compared to  the ground_truth_answer."
+            try:
+                old_stdout = sys.stdout
+                result = StringIO()
+                sys.stdout = result
+                exec(code_to_run)
+            except Exception as e:
+                with user():
+                    self.language_model += f"You recieved the following error: {e}. You will need to judge the answer on your own without the help of programming."
+            finally:
+                sys.stdout = old_stdout
+                output = result.getvalue()
+                with user():
+                    self.language_model += f"Program Output:\n{output}.\nThe following is your output. Continue your explanation using this output for whether the final_answer is correct compared to  the ground_truth_answer."
 
             with assistant():
                 self.language_model += gen("explan_output2", temperature=0.0, max_tokens=500)

@@ -42,11 +42,11 @@ from reasoning_agent import CRPoweredSelfDiscover, Judger
 
 gpt4 = guidance.models.OpenAIChat(model="gpt4-1106-preview", tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url="https://drchat.xyz")
 lm = guidance.models.OpenAIChat(model="gpt-3.5-turbo-16k", tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url="https://drchat.xyz")
-math_agent = CRPoweredSelfDiscover(lm)
+math_agent = CRPoweredSelfDiscover(gpt4)
 judge = Judger(gpt4)
 
 data = {}
-data_path = os.path.join(data_dir, "MATH", "test", "intermediate_algebra", "90.json")
+data_path = os.path.join(data_dir, "MATH", "test", "precalculus", "356.json")
 with open(data_path, 'r') as f:
     data = json.load(f)
 question = data["problem"]
