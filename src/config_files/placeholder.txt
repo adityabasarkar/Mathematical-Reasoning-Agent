@@ -1,0 +1,2 @@
+The config_files folder should be used to contain the .env files.
+The .env files should contain the OPENAI_API_KEY
