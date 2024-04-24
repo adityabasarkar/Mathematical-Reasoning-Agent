@@ -28,45 +28,37 @@ class CRPoweredSelfDiscover:
         self.reasoning_modules = [
             "1. How could I devise an experiment to help solve that problem?",
             "2. Make a list of ideas for solving this problem, and apply them one by one to the problem to see if any progress can be made.",
-            "3. How could I measure progress on this problem?",
-            "4. How can I simplify the problem so that it is easier to solve?",
-            "5. What are the key assumptions underlying this problem?",
-            "6. What are the potential risks and drawbacks of each solution?",
-            "7. What are the alternative perspectives or viewpoints on this problem?",
-            "8. What are the long-term implications of this problem and its solutions?",
-            "9. How can I break down this problem into smaller, more manageable parts?",
-            "10. Critical Thinking: This style involves analyzing the problem from different perspectives, questioning assumptions, and evaluating the evidence or information available. It focuses on logical reasoning, evidence-based decision-making, and identifying potential biases or flaws in thinking.",
-            "11. Try creative thinking, generate innovative and out-of-the-box ideas to solve the problem. Explore unconventional solutions, thinking beyond traditional boundaries, and encouraging imagination and originality.",
-            "12. Seek input and collaboration from others to solve the problem. Emphasize teamwork, open communication, and leveraging the diverse perspectives and expertise of a group to come up with effective solutions.",
-            "13. Use systems thinking: Consider the problem as part of a larger system and understanding the interconnectedness of various elements. Focuses on identifying the underlying causes, feedback loops, and interdependencies that influence the problem, and developing holistic solutions that address the system as a whole.",
-            "14. Use Risk Analysis: Evaluate potential risks, uncertainties, and tradeoffs associated with different solutions or approaches to a problem. Emphasize assessing the potential consequences and likelihood of success or failure, and making informed decisions based on a balanced analysis of risks and benefits.",
-            "15. Use Reflective Thinking: Step back from the problem, take the time for introspection and self-reflection. Examine personal biases, assumptions, and mental models that may influence problem-solving, and being open to learning from past experiences to improve future approaches.",
-            "16. What is the core issue or problem that needs to be addressed?",
-            "17. What are the underlying causes or factors contributing to the problem?",
-            "18. Are there any potential solutions or strategies that have been tried before? If yes, what were the outcomes and lessons learned?",
-            "19. What are the potential obstacles or challenges that might arise in solving this problem?",
-            "20. Are there any relevant data or information that can provide insights into the problem? If yes, what data sources are available, and how can they be analyzed?",
-            "21. Are there any stakeholders or individuals who are directly affected by the problem? What are their perspectives and needs?",
-            "22. What resources (financial, human, technological, etc.) are needed to tackle the problem effectively?",
-            "23. How can progress or success in solving the problem be measured or evaluated?",
-            "24. What indicators or metrics can be used?",
-            "25. Is the problem a technical or practical one that requires a specific expertise or skill set? Or is it more of a conceptual or theoretical problem?",
-            "26. Does the problem involve a physical constraint, such as limited resources, infrastructure, or space?",
-            "27. Is the problem related to human behavior, such as a social, cultural, or psychological issue?",
-            "28. Does the problem involve decision-making or planning, where choices need to be made under uncertainty or with competing objectives?",
-            "29. Is the problem an analytical one that requires data analysis, modeling, or optimization techniques?",
-            "30. Is the problem a design challenge that requires creative solutions and innovation?",
-            "31. Does the problem require addressing systemic or structural issues rather than just individual instances?",
-            "32. Is the problem time-sensitive or urgent, requiring immediate attention and action?",
-            "33. What kinds of solution typically are produced for this kind of problem specification?",
-            "34. Given the problem specification and the current best solution, have a guess about other possible solutions.",
-            "35. Let’s imagine the current best solution is totally wrong, what other ways are there to think about the problem specification?",
-            "36. What is the best way to modify this current best solution, given what you know about these kinds of problem specification?",
-            "37. Ignoring the current best solution, create an entirely new solution to the problem.",
-            "38. Let’s think step by step.",
-            "39. Let’s make a step by step plan and implement it with good notation and explanation.",
-            "40. How can I represent this question in terms of variables and equations?",
-            "41. How can the equations in this problem be rearanged to make the problem easier to solve?"
+            "3. How can I simplify the problem so that it is easier to solve?",
+            "4. What are the key assumptions underlying this problem?",
+            "5. What are the alternative perspectives or viewpoints on this problem?",
+            "6. How can I break down this problem into smaller, more manageable parts?",
+            "7. Critical Thinking: This style involves analyzing the problem from different perspectives, questioning assumptions, and evaluating the evidence or information available. It focuses on logical reasoning, evidence-based decision-making, and identifying potential biases or flaws in thinking.",
+            "8. Try creative thinking, generate innovative and out-of-the-box ideas to solve the problem. Explore unconventional solutions, thinking beyond traditional boundaries, and encouraging imagination and originality.",
+            "9. Use systems thinking: Consider the problem as part of a larger system and understanding the interconnectedness of various elements. Focuses on identifying the underlying causes, feedback loops, and interdependencies that influence the problem, and developing holistic solutions that address the system as a whole.",
+            "10. What is the core issue or problem that needs to be addressed?",
+            "11. Are there any potential solutions or strategies that have been tried before? If yes, what were the outcomes and lessons learned?",
+            "12. What are the potential obstacles or challenges that might arise in solving this problem?",
+            "14. What indicators or metrics can be used?",
+            "15. Is the problem a technical or practical one that requires a specific expertise or skill set? Or is it more of a conceptual or theoretical problem?",
+            "16. Does the problem involve decision-making or planning, where choices need to be made under uncertainty or with competing objectives?",
+            "17. Is the problem an analytical one that requires data analysis, modeling, or optimization techniques?",
+            "18. Does the problem require addressing systemic or structural issues rather than just individual instances?",
+            "19. What kinds of solution typically are produced for this kind of problem specification?",
+            "20. Let’s think step by step.",
+            "21. Let’s make a step by step plan and implement it with good notation and explanation.",
+            "22. What are the unknowns or variables in this problem?",
+            "23. How can the equations in this problem be rearanged to make the problem easier to solve?",
+            "24. What equations or formulas are relevant to this problem?",
+            "25. Can I simplify the problem using basic algebraic principles (like combining like terms, factoring, or dividing)?",
+            "26. Are there any constraints or conditions that must be considered?",
+            "27. What kind of functions or equations am I dealing with and what are its properties?",
+            "28. What assumptions am I making, and are they valid in this context?",
+            "29. What is the most efficient strategy to solve this problem?",
+            "30. What theorems or lemmas are applicable to this problem?",
+            "31. Are there any symmetries or patterns in the number set?",
+            "32. Are the events independent or dependent, and how does this affect the probability?",
+            "33. What assumptions am I making about the randomness or fairness of the events?",
+            "34. Can symmetry or geometric probability be used to solve this problem?"
         ]
 
     def solve(self, question_type: str, question: str, temperature: float):
@@ -122,18 +114,25 @@ class CRPoweredSelfDiscover:
         with user():
             self.language_model += """
             Given the question: {}, you have adapted the reasoning modules to your specific task.
-            Now, operationalize the reasoning modules into a step-by-step reasoning plan. Make sure
-            to think step by step as to what the reasoning plan should be. The following is an example
-            of a reasoning plan you might generate:
-            1. Find the area of the square
-            2. Find the area of the circle
-            3. Sum the areas
+            Now, operationalize the reasoning modules into a step-by-step reasoning plan.
 
-            Make sure to: Include what is necessary in the plan to reduce costs of generated output (meaning that no
-            self verfication is needed), only work to solve the problem and nothing else, and stay at or
-            under 8 steps. The last step should effectively solve the problem.
-            Remember that each step has to be completely and logically relevant to solving the problem and should logically follow from the previous steps that have been generated.
-            These steps should be carefully considered as you will be using them to solve the overall problem. 
+            Please provide a clear and concise list of the direct action steps necessary to solve the following specific mathematical problem. Focus solely on the operational tasks and calculations 
+            required to reach a solution, excluding any tasks that do not directly contribute to solving the problem, such as verifying the solution, understanding the context, or reflecting on the process.
+
+            Before generating the steps, figure out what the question is asking for. 
+            Then, for each step starting from the first step, briefly think about why there is a need for that step and outline how this action facilitates further progress towards the solution.
+            
+            List the steps in a numbered format, ensuring each one is essential for solving the problem and directly involved in the necessary computations or manipulations.
+
+            Examples of steps that should be included:
+            #. Find the number of prime numbers between 1 and 23
+            #. Simplify and rearange the equation so that x is on one side and y is on the other.
+            #. Find the value of the variable x.
+
+            Examples of steps that should *NOT* be included:
+            #. Verify the solution.
+            #. Understand the problem.
+            #. Reflect on the problem and what can be improved in the future.
             """.format(question)
         
         print("generate step by step plan")
@@ -322,15 +321,18 @@ class CRPoweredSelfDiscover:
             complete_solution_capsule["steps_list"]["Step {}".format(i)]["init_propositions"] = self.language_model["init_propositions"]
 
             with user():
-                self.language_model += """Generate subsequent propositions. For the final program, make sure: 
-                1. All variables explicitly defined within the script itself before use, except for constants from the Python math library, which can be used directly. Keep in mind that the program you write is completely
-                isolated from the rest of your output. This means that what is run inside the program tags cannot leverage any of the variables you define outside the program tag.
-                Examples of how you would define variables include: x = 10, y = math.sqrt(3), z = math.ceil(math.pow(3.14, 2))
-                2. Only use the variables that are defined with numbers to produce new output. Example: In the previous step, the variables x, y, and z, were all defined. So the program can and should only use these variables to
-                produce the final output.
-                3. Not to use any recursion and avoid any overcomplication of the code, that might cause errors. 
-                The goal of these steps is to avoid any errors that involve undefined numbers.
+                self.language_model += """Generate subsequent propositions.
+                
+                You can include any number of subsequent propositions with the same format as the initial propositions. 
+                The final subsequent proposition HAS TO be a program. 
+
+                For the final program, make sure and remember: 
+                1. All variables must be explicitly defined within the script itself before use, except for constants from the Python math and sympy library, which can be used directly. 
+                2. Assume that the program inside tags is completely isolated from everything else.
+                3. Only use the variables that are defined with numbers to produce new output.
+                3. Not to use any recursion and avoid any overcomplication of the code that might cause errors.
                 4. Not to write programs that would take too long to run, or do infinite loops.
+                5. Every program SHOULD print out some value using print(). The output can be used for future clarification. 
                 """
             
             with assistant():
@@ -382,9 +384,10 @@ class CRPoweredSelfDiscover:
             if tries > 0:
                 with user():
                     self.language_model += f"""
-                Your program could not run. You will have to generate the solution to the current step yourself.
-                Given that these are your intial sub_propositions: {self.language_model["sub_propositions"]}, regenerate your
-                subsequent propositions without any python program (only natural language)
+                Your program was unable to run. You will have to generate the solution to the current step yourself without the help of a program.
+                Given that these are your previous attempt at generating subsequent propositions: {self.language_model["sub_propositions"]}, regenerate your
+                subsequent propositions in such a way that every single subsequent proposition is in ENGLISH. There should be NO CODE and NO PYTHON PROGRAMMING.
+                This also means NO USING THE <PROGRAM></PROGRAM> tags in your next output.
                 Make sure to follow the same format as the other propositions ([prop #] [based on prop #s] proposition)
                 """
                     
