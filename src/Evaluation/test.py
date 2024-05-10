@@ -37,16 +37,22 @@ from guidance import user, assistant, system
 import tiktoken
 from tiktoken import encoding_name_for_model
 import argparse
-from reasoning_agent import CRPoweredSelfDiscover, Judger
+# from reasoning_agent import CRPoweredSelfDiscover, Judger
+from reasoning_agent_litellm import CRPoweredSelfDiscover, Judger
 
+from time import sleep
+from litellm import completion
 
-gpt4 = guidance.models.OpenAIChat(model="gpt4-1106-preview", tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url="https://drchat.xyz")
-lm = guidance.models.OpenAIChat(model="gpt-3.5-turbo-16k", tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url="https://drchat.xyz")
-math_agent = CRPoweredSelfDiscover(lm)
-judge = Judger(gpt4)
+math_agent = CRPoweredSelfDiscover("gpt4-1106-preview")
+judge = Judger("gpt4-1106-preview")
+
+# gpt4 = guidance.models.OpenAIChat(model="gpt4-1106-preview", tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url="https://drchat.xyz")
+# lm = guidance.models.OpenAIChat(model="gpt-3.5-turbo-16k", tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url="https://drchat.xyz")
+# math_agent = CRPoweredSelfDiscover(lm)
+# judge = Judger(gpt4)
 
 data = {}
-data_path = os.path.join(data_dir, "MATH", "test", "prealgebra", "2061.json")
+data_path = os.path.join(data_dir, "MATH", "test", "precalculus", "186.json")
 with open(data_path, 'r') as f:
     data = json.load(f)
 question = data["problem"]
@@ -55,10 +61,9 @@ actual_solution = data["solution"]
 
 
 solution, solution_dict = math_agent.solve(question_type, question, 0.0)
-j = judge.compare(question, question_type, solution, actual_solution)
+judgement = judge.compare(question, question_type, solution, actual_solution)
 
 
 print(solution)
-print(j['correctness'])
-print(math_agent.language_model.token_count)
-print(judge.language_model.token_count)
+print("#############")
+print(judgement)

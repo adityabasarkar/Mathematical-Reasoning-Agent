@@ -7,12 +7,6 @@ from dotenv import load_dotenv
 import sys
 import json
 from multiprocessing import Semaphore, Process, Manager
-import guidance
-from guidance import models, gen
-from guidance import select
-from guidance import user, assistant, system
-import tiktoken
-from tiktoken import encoding_name_for_model
 import argparse
 
 ##################################
@@ -37,7 +31,7 @@ sys.path.append(main_dir)
 sys.path.append(config_dir)
 sys.path.append(reasoning_agent_dir)
 sys.path.append(data_dir)
-from reasoning_agent import CRPoweredSelfDiscover, Judger, CummulativeReasoning
+from reasoning_agent_litellm import CRPoweredSelfDiscover, Judger
 
 # Load API keys
 load_dotenv(os.path.join(config_dir, ".env"))
@@ -68,12 +62,9 @@ def worker(shared_data, counter_lock, pid: int, start_dif: int, args):
     paths_list = shared_data['paths_list']
 
     for i in range(start_dif, len(paths_list), args.num_workers):
-            
-        gpt4 = guidance.models.OpenAIChat(model="gpt4-1106-preview", tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url=args.base_url)
-        lm = guidance.models.OpenAIChat(model=args.model, tokenizer=tiktoken.get_encoding("cl100k_base"), api_key=apikey, caching=True, base_url=args.base_url)
 
-        math_agent = CRPoweredSelfDiscover(lm)
-        judge = Judger(gpt4)
+        math_agent = CRPoweredSelfDiscover("gpt4-1106-preview")
+        judge = Judger("gpt4-1106-preview")
 
         data = {}
         with open(paths_list[i], 'r') as f:
@@ -85,11 +76,6 @@ def worker(shared_data, counter_lock, pid: int, start_dif: int, args):
         while (tries < args.answertrycnt):
             try:
 
-                # Parallel Solving
-                lm.reset()
-                gpt4.reset()
-                math_agent = CRPoweredSelfDiscover(lm)
-                judge = Judger(gpt4)
                 solution, solution_dict = math_agent.solve(data['type'], data['problem'], 0.0)
                 judgement = judge.compare(data['problem'], data['type'], solution, data['solution'])
                 
@@ -101,15 +87,14 @@ def worker(shared_data, counter_lock, pid: int, start_dif: int, args):
                     
                     print(f"PID: {pid} | In Lock")
                     shared_data['num_solved'].value += 1
-                    if judgement["correctness"] == "Correct":
+                    if judgement == "Correct":
                         shared_data['num_correct'].value += 1
 
                     jsonDump = {"PID": f"{pid}",
                                 "Number Solved": f"{shared_data['num_solved'].value}/{shared_data['total_num_problems']}",
                                 "Running Accuracy": "{}".format(round(shared_data['num_correct'].value / shared_data['num_solved'].value, 3)),
                                 "Level": data["level"],
-                                "Correctness": judgement["correctness"],
-                                "Token Count": math_agent.language_model.token_count,
+                                "Correctness": judgement,
                                 "Question Type": data['type'],
                                 "Generated Solution": solution,
                                 "Actual Solution": data["solution"],
