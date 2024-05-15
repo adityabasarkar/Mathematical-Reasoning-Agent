@@ -43,7 +43,7 @@ import argparse
 from time import sleep
 import litellm
 from litellm import completion
-litellm.set_verbose=True
+litellm.set_verbose=False
 import guidance
 from guidance import models, gen
 from guidance import select
@@ -410,7 +410,6 @@ class Judger:
 
     def compare(self, question_content: str, question_subject: str, final_answer: str, ground_truth: str):
         
-        print("------------")
         response = completion(
             api_key=apikey,
             base_url="https://drchat.xyz",
@@ -424,9 +423,7 @@ class Judger:
         )
 
         ground_truth_answer = response.choices[0].message.content
-        print(ground_truth_answer)
 
-        print("------------")
         response = completion(
             api_key=apikey,
             base_url="https://drchat.xyz",
@@ -453,21 +450,23 @@ class Judger:
         )
 
         compare_rationale = response.choices[0].message.content
-        print(compare_rationale)
 
         match = re.search(r'<PROGRAM>(.*?)</PROGRAM>', compare_rationale, re.DOTALL)
         output = None
 
-        print("------------")
         if match:
+
             code_to_run = match.group(1)
+
             try:
+
                 old_stdout = sys.stdout
                 result = StringIO()
                 sys.stdout = result
                 exec(code_to_run)
                 output = result.getvalue()
                 sys.stdout = old_stdout
+
                 response = completion(
                     api_key=apikey,
                     base_url="https://drchat.xyz",
@@ -495,7 +494,9 @@ class Judger:
                 )
 
             except Exception as e:
+
                 sys.stdout = old_stdout
+
                 response = completion(
                     api_key=apikey,
                     base_url="https://drchat.xyz",
@@ -517,9 +518,7 @@ class Judger:
                                 ""","role": "user"}],
                     temperature=0.0
                 )
-            
-        print(response.choices[0].message.content)
-        print("------------")
+        
         response = completion(
             api_key=apikey,
             base_url="https://drchat.xyz",
