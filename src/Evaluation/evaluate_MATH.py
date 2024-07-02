@@ -39,8 +39,9 @@ sys.path.append(main_dir)
 sys.path.append(config_dir)
 sys.path.append(reasoning_agent_dir)
 sys.path.append(data_dir)
-from reasoning_agent_litellm import Judger
-from CR_mod_reasoning_litellm import CR_modified
+
+from CRSD_reasoning_agent_litellm import Judger
+from CR_mod_reasoning_litellm_ReasoningChainCheck import CR_modified
 
 # Load API keys
 load_dotenv(os.path.join(config_dir, ".env"))

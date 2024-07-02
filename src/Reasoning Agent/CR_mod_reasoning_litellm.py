@@ -36,7 +36,7 @@ import argparse
 from time import sleep
 import litellm
 from litellm import completion
-litellm.set_verbose = False
+litellm.set_verbose = True
 import guidance
 from guidance import models, gen
 from guidance import select
